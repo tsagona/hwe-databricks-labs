@@ -84,24 +84,39 @@ python3 "$SCRIPT_DIR/gen_bronze_instore_orders.py" \
 
 # ── Upload to DBFS ────────────────────────────────────────────────────────────
 
+FILES=(
+    "books.csv|books|books.csv"
+    "stores.csv|stores|stores.csv"
+    "online_orders.csv|online_orders|online_orders.csv"
+    "instore_orders.csv|instore_orders|instore_orders.csv"
+)
+TOTAL=${#FILES[@]}
+
 echo ""
-echo "Uploading to $DBFS_PATH ..."
+echo "Uploading $TOTAL files to $DBFS_PATH ..."
+echo ""
 
-$DB fs mkdirs "$DBFS_PATH/books"
-$DB fs mkdirs "$DBFS_PATH/stores"
-$DB fs mkdirs "$DBFS_PATH/online_orders"
-$DB fs mkdirs "$DBFS_PATH/instore_orders"
+for i in "${!FILES[@]}"; do
+    IFS='|' read -r LOCAL_NAME SUBDIR REMOTE_NAME <<< "${FILES[$i]}"
+    STEP=$((i + 1))
+    FILE_SIZE=$(du -h "$TMPDIR/$LOCAL_NAME" | cut -f1 | xargs)
 
-$DB fs cp "$TMPDIR/books.csv"          "$DBFS_PATH/books/books.csv"                   --overwrite
-$DB fs cp "$TMPDIR/stores.csv"         "$DBFS_PATH/stores/stores.csv"                 --overwrite
-$DB fs cp "$TMPDIR/online_orders.csv"  "$DBFS_PATH/online_orders/online_orders.csv"   --overwrite
-$DB fs cp "$TMPDIR/instore_orders.csv" "$DBFS_PATH/instore_orders/instore_orders.csv" --overwrite
+    FILLED=$((STEP * 20 / TOTAL))
+    EMPTY=$((20 - FILLED))
+    BAR=$(printf '#%.0s' $(seq 1 $FILLED))$(printf '.%.0s' $(seq 1 $EMPTY))
 
+    printf "\r  [%-20s] %d/%d  %-25s (%s)" "$BAR" "$STEP" "$TOTAL" "$REMOTE_NAME" "$FILE_SIZE"
+
+    $DB fs mkdirs "$DBFS_PATH/$SUBDIR"
+    $DB fs cp "$TMPDIR/$LOCAL_NAME" "$DBFS_PATH/$SUBDIR/$REMOTE_NAME" --overwrite
+done
+
+echo ""
 echo ""
 echo "Done. Files uploaded to:"
-echo "  $DBFS_PATH/books/books.csv"
-echo "  $DBFS_PATH/stores/stores.csv"
-echo "  $DBFS_PATH/online_orders/online_orders.csv"
-echo "  $DBFS_PATH/instore_orders/instore_orders.csv"
+for f in "${FILES[@]}"; do
+    IFS='|' read -r _ SUBDIR REMOTE_NAME <<< "$f"
+    echo "  $DBFS_PATH/$SUBDIR/$REMOTE_NAME"
+done
 echo ""
 echo "Use these paths in the week 4 lab read_files() calls."
