@@ -9,12 +9,9 @@ The domain is an **online bookstore** using a medallion architecture (Bronze →
 
 - `labs/curriculum.md` — Weekly curriculum overview (weeks 1-6)
 - `labs/data-model.md` — Full data model specification (Bronze, Silver, Gold)
-- `labs/week4/week4_lab.ipynb` — Bronze lab (solution)
-- `labs/week5/week5_lab.ipynb` — Silver lab (solution)
-- `labs/week6/week6_lab.ipynb` — Gold lab (solution)
-- `ddl/bronze/` — create_bronze.ipynb, drop_bronze.ipynb
-- `ddl/silver/` — create_silver.ipynb, drop_silver.ipynb
-- `ddl/gold/` — create_gold.ipynb, drop_gold.ipynb
+- `labs/week4/` — Bronze: week4_lab.ipynb (solution), create_bronze.ipynb, drop_bronze.ipynb
+- `labs/week5/` — Silver: week5_lab.ipynb (solution), create_silver.ipynb, drop_silver.ipynb
+- `labs/week6/` — Gold: week6_lab.ipynb (solution), create_gold.ipynb, drop_gold.ipynb
 - Data generation scripts live in a separate infrastructure repo (deterministic bronze CSV test data + DBFS upload)
 
 ## Table Naming Convention
@@ -67,7 +64,7 @@ Both order tables have an `items` column containing a JSON array of line items:
 - Tables are organized into schemas by layer: `bronze.*`, `silver.*`, `gold.*`.
 - `total_amount` is kept on silver.orders even though it's derivable from order_items — useful for data quality checks.
 - `title` in the items JSON is dropped during the silver explode since it's redundant with silver.books.
-- DDL is managed separately from ETL pipelines — `ddl/` contains CREATE/DROP scripts, lab notebooks contain only transformations.
+- DDL (CREATE/DROP scripts) lives alongside the lab notebook in each week's folder. Lab notebooks contain only transformations.
 - Surrogate keys use `_id` suffix (e.g., `customer_id`, `book_id`). The store natural key is `store_nbr` across all layers; `store_id` is the surrogate in gold only.
 - Gold dimensions use `BIGINT GENERATED ALWAYS AS IDENTITY` for surrogate keys.
 - Gold fact_sales uses MERGE on the natural key `(order_id, order_channel, isbn)` carried as degenerate dimensions, making the load idempotent and incremental.
