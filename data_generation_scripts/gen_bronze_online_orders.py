@@ -141,7 +141,7 @@ def main():
             for i in range(args.count)]
 
     with open(args.output, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fieldnames, doublequote=False, escapechar='\\')
         writer.writeheader()
         writer.writerows(rows)
 
