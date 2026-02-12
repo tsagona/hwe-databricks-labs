@@ -15,10 +15,7 @@ The domain is an **online bookstore** using a medallion architecture (Bronze →
 - `ddl/bronze/` — create_bronze.ipynb, drop_bronze.ipynb
 - `ddl/silver/` — create_silver.ipynb, drop_silver.ipynb
 - `ddl/gold/` — create_gold.ipynb, drop_gold.ipynb
-- `data_generation_scripts/` — Python scripts to generate deterministic bronze CSV test data + upload script
-  - `gen_bronze_books.py`, `gen_bronze_stores.py`, `gen_bronze_online_orders.py`, `gen_bronze_instore_orders.py`
-  - `customers.py` — shared static pool of 100 customers
-  - `generate-and-upload-data.sh` — generates data and uploads to DBFS via Databricks CLI (`--profile` required)
+- Data generation scripts live in a separate infrastructure repo (deterministic bronze CSV test data + DBFS upload)
 
 ## Table Naming Convention
 
