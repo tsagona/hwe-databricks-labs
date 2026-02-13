@@ -22,11 +22,11 @@ All tables add `ingestion_timestamp` and `source_filename`. MERGE INTO using nat
 | Column | Notes |
 |---|---|
 | `store_nbr` PK | Natural key |
-| `store_name` | |
-| `store_address` | |
-| `store_city` | |
-| `store_state` | |
-| `store_zip` | |
+| `name` | |
+| `address` | |
+| `city` | |
+| `state` | |
+| `zip` | |
 | `ingestion_timestamp` | Added on load |
 | `source_filename` | Added on load |
 
