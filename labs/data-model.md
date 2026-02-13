@@ -177,16 +177,31 @@ MERGE key: `(order_id, order_channel)`
 | `state` | |
 | `zip` | |
 
-### gold.dim_date
+### gold.dim_date — loaded from CSV
 
 | Column | Notes |
 |---|---|
-| `date_id` PK | Surrogate key |
-| `date` | |
-| `day_of_week` | |
+| `date_id` PK | Surrogate key (from CSV, not identity) |
+| `full_date` | |
+| `day_of_week` | Numeric (1-7) |
+| `day_num_in_month` | |
+| `day_name` | e.g., "Monday" |
+| `day_abbrev` | e.g., "Mon" |
+| `weekday_flag` | |
+| `week_num_in_year` | |
+| `week_begin_date` | |
+| `week_begin_date_id` | |
 | `month` | |
+| `month_name` | e.g., "January" |
+| `month_abbrev` | e.g., "Jan" |
 | `quarter` | |
 | `year` | |
+| `yearmo` | |
+| `fiscal_month` | |
+| `fiscal_quarter` | |
+| `fiscal_year` | |
+| `last_day_in_month_flag` | |
+| `same_day_year_ago_date` | |
 
 ### gold.fact_sales — grain: one row per line item
 
