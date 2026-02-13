@@ -71,6 +71,12 @@ Both order tables have an `items` column containing a JSON array of line items:
 - Sentinel dimension rows are added in the gold layer for `'in-store'` (dim_customer) and `'online'` (dim_store) to ensure fact table JOINs don't drop rows.
 - All notebooks use SQL kernel (.ipynb with `"language": "sql"`).
 
+## Editing .ipynb Notebooks
+
+Never use tools that re-serialize the entire notebook JSON (e.g., NotebookEdit, json.load/json.dumps). These change the internal format of cell sources (list-of-lines vs single string) and produce noisy whitespace diffs.
+
+Instead, read the .ipynb file as a raw string, use targeted string replacement, and write it back. This preserves the exact JSON formatting and produces minimal, content-only diffs.
+
 ## Course Week Mapping
 
 - **Week 1**: SQL basics, Databricks UI
