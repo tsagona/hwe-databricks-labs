@@ -21,9 +21,10 @@ All tables use `schema.table` naming, where the schema is the medallion layer: `
 ## Data Model Summary
 
 ### Bronze (Week 4) — Raw CSV Ingestion
-4 source tables, each with `ingestion_timestamp` and `source_filename` appended. MERGE INTO using natural keys for idempotency.
+5 source tables, each with `ingestion_timestamp` and `source_filename` appended. MERGE INTO using natural keys for idempotency.
 
-- **bronze.books** (PK: isbn)
+- **bronze.categories** (PK: category_id) — 3-level self-referential hierarchy (category → genre → subgenre)
+- **bronze.books** (PK: isbn) — `category_id` references leaf-level categories
 - **bronze.stores** (PK: store_nbr)
 - **bronze.online_orders** (PK: order_id) — includes customer name/address fields
 - **bronze.instore_orders** (PK: order_id) — customer_email nullable
@@ -32,10 +33,11 @@ Both order tables have an `items` column containing a JSON array of line items:
 `[{"isbn": "...", "title": "...", "quantity": N, "unit_price": N.NN}, ...]`
 
 ### Silver (Week 5) — Normalized 3NF
-5 tables. All tables use natural keys as PKs.
+6 tables. All tables use natural keys as PKs.
 
+- **silver.categories** (PK: category_id) — self-referential hierarchy: `parent_category_id` FK to self (empty string for top-level). 26 rows: 2 categories, 8 genres, 16 subgenres.
 - **silver.customers** (PK: email) — derived from bronze.online_orders, takes most recent order's customer fields
-- **silver.books** (PK: isbn)
+- **silver.books** (PK: isbn) — `category_id` FK → silver.categories (leaf only)
 - **silver.stores** (PK: store_nbr)
 - **silver.orders** (PK: order_id + order_channel) — unified from online + instore orders
   - MERGE key: (order_id, order_channel)
@@ -47,7 +49,7 @@ Both order tables have an `items` column containing a JSON array of line items:
 5 tables. All dimensions have surrogate keys. Denormalized for query performance.
 
 - **gold.dim_customer** (SCD Type 1)
-- **gold.dim_book**
+- **gold.dim_book** — category hierarchy flattened into `subgenre`, `genre`, `category` via self-joins on silver.categories
 - **gold.dim_store**
 - **gold.dim_date** — calendar dimension (date, day_of_week, month, quarter, year)
 - **gold.fact_sales** — grain: one row per line item
@@ -70,6 +72,7 @@ Both order tables have an `items` column containing a JSON array of line items:
 - Gold fact_sales uses MERGE on the natural key `(order_id, order_channel, isbn)` carried as degenerate dimensions, making the load idempotent and incremental.
 - Sentinel dimension rows are added in the gold layer for `'in-store'` (dim_customer) and `'online'` (dim_store) to ensure fact table JOINs don't drop rows.
 - All notebooks use SQL kernel (.ipynb with `"language": "sql"`).
+- Categories use a self-referential hierarchy in bronze/silver (26 rows, 3 levels: category → genre → subgenre). Books reference leaf category_id only. In gold, the hierarchy is flattened onto `dim_book` as `subgenre`/`genre`/`category` via two self-joins — no separate gold categories dimension. This creates a clear contrast between 3NF (self-joins needed) and star schema (pre-joined for analysts).
 
 ## Editing .ipynb Notebooks
 

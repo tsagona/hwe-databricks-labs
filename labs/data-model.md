@@ -6,6 +6,16 @@ All tables follow the naming convention `schema.table`, where the schema is the 
 
 All tables add `ingestion_timestamp` and `source_filename`. MERGE INTO using natural keys for idempotency.
 
+### bronze.categories
+
+| Column | Notes |
+|---|---|
+| `category_id` PK | Natural key |
+| `category_name` | |
+| `parent_category_id` | Empty string for top-level |
+| `ingestion_timestamp` | Added on load |
+| `source_filename` | Added on load |
+
 ### bronze.books
 
 | Column | Notes |
@@ -13,7 +23,7 @@ All tables add `ingestion_timestamp` and `source_filename`. MERGE INTO using nat
 | `isbn` PK | Natural key |
 | `title` | |
 | `author` | |
-| `genre` | |
+| `category_id` | FK to categories (leaf only) |
 | `ingestion_timestamp` | Added on load |
 | `source_filename` | Added on load |
 
@@ -76,6 +86,16 @@ All tables add `ingestion_timestamp` and `source_filename`. MERGE INTO using nat
 
 ## Silver (Week 5) — Normalized 3NF
 
+### silver.categories — self-referential hierarchy
+
+| Column | Notes |
+|---|---|
+| `category_id` PK | Natural key |
+| `category_name` | |
+| `parent_category_id` | FK to self; empty string for top-level |
+
+Three levels: Category (2 rows) → Genre (8 rows) → Subgenre (16 rows). 26 total rows. Books reference leaf-level (subgenre) category_id only.
+
 ### silver.customers — derived from bronze.online_orders
 
 | Column | Notes |
@@ -96,7 +116,7 @@ Extracted from `bronze.online_orders` by grouping on `customer_email` and taking
 | `isbn` PK | Natural key |
 | `title` | |
 | `author` | |
-| `genre` | |
+| `category_id` | FK → silver.categories (leaf only) |
 
 **Data quality checks (bronze → silver):**
 1. **Null/empty** — Reject rows where `isbn` or `title` is null or empty string.
@@ -155,7 +175,7 @@ MERGE key: `(order_id, order_channel)`
 | `state` | |
 | `zip` | |
 
-### gold.dim_book
+### gold.dim_book — flattened category hierarchy
 
 | Column | Notes |
 |---|---|
@@ -163,7 +183,11 @@ MERGE key: `(order_id, order_channel)`
 | `isbn` | Natural key |
 | `title` | |
 | `author` | |
-| `genre` | |
+| `subgenre` | Leaf category name (from silver.categories self-join) |
+| `genre` | Mid-level category name |
+| `category` | Top-level category name |
+
+The 3-level category hierarchy from `silver.categories` is flattened onto `dim_book` via two self-joins during the gold load. No separate gold categories dimension is needed.
 
 ### gold.dim_store
 
