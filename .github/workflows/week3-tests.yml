@@ -1,0 +1,40 @@
+name: Week 3 Tests (SQL & Testing)
+
+on:
+  pull_request:
+    paths:
+      - 'labs/week3/**'
+      - 'tests/test_week3_sql.py'
+      - 'tests/notebook_utils.py'
+      - '.github/workflows/week3-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'labs/week3/**'
+      - 'tests/test_week3_sql.py'
+
+jobs:
+  test-week3:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Run Week 3 tests
+        run: |
+          pytest tests/test_week3_sql.py -v --tb=short
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "✅ Week 3 tests completed"

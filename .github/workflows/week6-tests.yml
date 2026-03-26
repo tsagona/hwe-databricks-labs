@@ -1,0 +1,48 @@
+name: Week 6 Tests (Gold Layer)
+
+on:
+  pull_request:
+    paths:
+      - 'labs/week6/**'
+      - 'tests/test_week6_gold.py'
+      - 'tests/notebook_utils.py'
+      - '.github/workflows/week6-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'labs/week6/**'
+      - 'tests/test_week6_gold.py'
+
+jobs:
+  test-week6:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Set up Spark
+        run: |
+          echo "SPARK_LOCAL_IP=127.0.0.1" >> $GITHUB_ENV
+
+      - name: Create test tables
+        run: |
+          python scripts/setup_test_tables.py
+
+      - name: Run Week 6 tests
+        run: |
+          pytest tests/test_week6_gold.py -v --tb=short
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "✅ Week 6 Gold layer tests completed"

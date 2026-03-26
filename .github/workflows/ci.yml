@@ -1,0 +1,42 @@
+name: All Tests (Full Suite)
+
+on:
+  workflow_dispatch:  # Allow manual trigger
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Set up Spark
+        run: |
+          echo "SPARK_LOCAL_IP=127.0.0.1" >> $GITHUB_ENV
+
+      - name: Create all test schemas and tables
+        run: |
+          python scripts/setup_test_tables.py
+
+      - name: Run all tests
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "✅ Full test suite completed"

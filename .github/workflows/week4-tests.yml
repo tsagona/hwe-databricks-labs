@@ -1,0 +1,48 @@
+name: Week 4 Tests (Bronze Layer)
+
+on:
+  pull_request:
+    paths:
+      - 'labs/week4/**'
+      - 'tests/test_week4_bronze.py'
+      - 'tests/notebook_utils.py'
+      - '.github/workflows/week4-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'labs/week4/**'
+      - 'tests/test_week4_bronze.py'
+
+jobs:
+  test-week4:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-test.txt
+
+      - name: Set up Spark
+        run: |
+          echo "SPARK_LOCAL_IP=127.0.0.1" >> $GITHUB_ENV
+
+      - name: Create test tables
+        run: |
+          python scripts/setup_test_tables.py
+
+      - name: Run Week 4 tests
+        run: |
+          pytest tests/test_week4_bronze.py -v --tb=short
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "✅ Week 4 Bronze layer tests completed"
