@@ -1,7 +1,6 @@
-"""Demo test file for Week 3 — illustrates SELECT COUNT and INSERT + verify patterns.
+"""Demo test file for Week 3 — illustrates the INSERT + verify pattern.
 
-Pattern 1 (SELECT COUNT): run a query and assert the returned count.
-Pattern 2 (INSERT + verify): run a DML statement, then SELECT to verify the result, then assert.
+Both patterns: run an INSERT statement, then SELECT to verify the result, then assert.
 """
 
 import os
@@ -16,11 +15,11 @@ _W3_DEMO = os.path.join(_REPO_ROOT, "labs", "week3", "week3_demo.ipynb")
 # Tests — Basic SQL query validation (DO MODIFY - implement these!)
 # ===========================================================================
 
-def test_valid_email_count(spark):
-    """Assert that the count of employees with valid emails is correct."""
-    _run_cell(spark, "demo_valid_email_count")
-    rows = spark.sql("SELECT * FROM week3_testing.employees WHERE email LIKE '%@%'").collect()
-    # TODO: assert len(rows) equals the number of employees with a valid email
+def test_valid_email_filter(spark):
+    """Assert that only employees with a valid email are inserted into filtered_employees."""
+    _run_cell(spark, "demo_valid_email_filter")
+    rows = spark.sql("SELECT * FROM week3_testing.filtered_employees").collect()
+    # TODO: assert len(rows) equals the number of employees whose email contains '@'
 
 
 def test_insert_engineering_filter(spark):
