@@ -15,50 +15,6 @@ _W5_LAB = os.path.join(_REPO_ROOT, "labs", "week5", "week5_lab.ipynb")
 
 
 # ===========================================================================
-# Helpers
-# ===========================================================================
-
-def _run_cell(spark, pattern):
-    sql = find_cell(_W5_LAB, pattern)
-    assert sql is not None, f"Could not find cell matching: {pattern}"
-    spark.sql(sql)
-
-
-def _run_silver_stores(spark):
-    _run_cell(spark, "silver_stores_merge")
-
-
-def _run_silver_categories(spark):
-    _run_cell(spark, "silver_categories_merge")
-
-
-def _run_silver_books(spark):
-    _run_cell(spark, "silver_books_merge")
-
-
-def _run_silver_customers(spark):
-    _run_cell(spark, "silver_customers_merge")
-
-
-def _run_orders_unified_view(spark):
-    _run_cell(spark, "silver_orders_unified_view")
-
-
-def _run_silver_orders(spark):
-    _run_orders_unified_view(spark)
-    _run_cell(spark, "silver_orders_merge")
-
-
-def _run_order_items_exploded_view(spark):
-    _run_cell(spark, "silver_order_items_exploded_view")
-
-
-def _run_silver_order_items(spark):
-    _run_order_items_exploded_view(spark)
-    _run_cell(spark, "silver_order_items_merge")
-
-
-# ===========================================================================
 # Tests — silver.stores (DO MODIFY - implement these!)
 # ===========================================================================
 
@@ -167,9 +123,48 @@ def test_order_items_exploded(spark):
 
 
 # ===========================================================================
-# Test fixtures — populate bronze tables with test data
-# (COMPLETE - Do not modify)
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
 # ===========================================================================
+
+def _run_cell(spark, pattern):
+    sql = find_cell(_W5_LAB, pattern)
+    assert sql is not None, f"Could not find cell matching: {pattern}"
+    spark.sql(sql)
+
+
+def _run_silver_stores(spark):
+    _run_cell(spark, "silver_stores_merge")
+
+
+def _run_silver_categories(spark):
+    _run_cell(spark, "silver_categories_merge")
+
+
+def _run_silver_books(spark):
+    _run_cell(spark, "silver_books_merge")
+
+
+def _run_silver_customers(spark):
+    _run_cell(spark, "silver_customers_merge")
+
+
+def _run_orders_unified_view(spark):
+    _run_cell(spark, "silver_orders_unified_view")
+
+
+def _run_silver_orders(spark):
+    _run_orders_unified_view(spark)
+    _run_cell(spark, "silver_orders_merge")
+
+
+def _run_order_items_exploded_view(spark):
+    _run_cell(spark, "silver_order_items_exploded_view")
+
+
+def _run_silver_order_items(spark):
+    _run_order_items_exploded_view(spark)
+    _run_cell(spark, "silver_order_items_merge")
+
 
 @pytest.fixture(autouse=True)
 def bronze_data(spark):

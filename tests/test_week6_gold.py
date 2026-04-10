@@ -14,16 +14,6 @@ _W6_LAB = os.path.join(_REPO_ROOT, "labs", "week6", "week6_lab.ipynb")
 
 
 # ===========================================================================
-# Helpers
-# ===========================================================================
-
-def _run_cell(spark, pattern):
-    sql = find_cell(_W6_LAB, pattern)
-    assert sql is not None, f"Could not find cell matching: {pattern}"
-    spark.sql(sql)
-
-
-# ===========================================================================
 # Tests — gold.dim_customer (DO MODIFY - implement these!)
 # ===========================================================================
 
@@ -114,9 +104,14 @@ def test_fact_sales_degenerate_dims(spark):
 
 
 # ===========================================================================
-# Test fixtures — populate silver and gold tables with test data
-# (COMPLETE - Do not modify)
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
 # ===========================================================================
+
+def _run_cell(spark, pattern):
+    sql = find_cell(_W6_LAB, pattern)
+    assert sql is not None, f"Could not find cell matching: {pattern}"
+    spark.sql(sql)
+
 
 @pytest.fixture(autouse=True)
 def silver_data(spark):

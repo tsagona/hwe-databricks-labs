@@ -15,29 +15,21 @@ _W3_LAB = os.path.join(_REPO_ROOT, "labs", "week3", "week3_lab.ipynb")
 
 
 # ===========================================================================
-# Helper to run a SQL cell from the notebook
-# ===========================================================================
-
-def _run_cell(spark, pattern):
-    sql = find_cell(_W3_LAB, pattern)
-    assert sql is not None, f"Could not find cell matching: {pattern}"
-    return spark.sql(sql)
-
-
-# ===========================================================================
 # Tests — Basic SQL query validation (DO MODIFY - implement these!)
 # ===========================================================================
 
 def test_valid_email_filter(spark):
     """Verify that the count of employees with valid emails is correct."""
-    rows = _run_cell(spark, "valid_email_filter").collect()
-    # TODO: assert rows[0].valid_email_count equals the number of employees with a valid email
+    _run_cell(spark, "valid_email_filter")
+    rows = spark.sql("SELECT * FROM week3_testing.employees WHERE email LIKE '%@%'").collect()
+    # TODO: assert len(rows) equals the number of employees with a valid email
 
 
 def test_employees_in_salary_range(spark):
     """Verify that the count of employees in the salary range is correct."""
-    rows = _run_cell(spark, "employees_in_salary_range").collect()
-    # TODO: assert rows[0].employee_count equals the number of employees with salary between $50,000 and $100,000
+    _run_cell(spark, "employees_in_salary_range")
+    rows = spark.sql("SELECT * FROM week3_testing.employees WHERE salary >= 50000 AND salary <= 100000").collect()
+    # TODO: assert len(rows) equals the number of employees with salary between $50,000 and $100,000
 
 
 def test_recent_hires(spark):
@@ -55,9 +47,14 @@ def test_engineering_department_filter(spark):
 
 
 # ===========================================================================
-# Test fixtures — automatically create schema and populate test data
-# (COMPLETE - Do not modify)
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
 # ===========================================================================
+
+def _run_cell(spark, pattern):
+    sql = find_cell(_W3_LAB, pattern)
+    assert sql is not None, f"Could not find cell matching: {pattern}"
+    return spark.sql(sql)
+
 
 @pytest.fixture(autouse=True)
 def week3_test_data(spark):

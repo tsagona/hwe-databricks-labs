@@ -10,16 +10,6 @@ _W4_LAB = os.path.join(_REPO_ROOT, "labs", "week4", "week4_lab.ipynb")
 
 
 # ===========================================================================
-# Helper to run a SQL cell from the notebook
-# ===========================================================================
-
-def _run_cell(spark, pattern):
-    sql = find_cell(_W4_LAB, pattern)
-    assert sql is not None, f"Could not find cell matching: {pattern}"
-    spark.sql(sql)
-
-
-# ===========================================================================
 # Tests — INSERT OVERWRITE (static reference data)
 # (DO MODIFY - implement these!)
 # ===========================================================================
@@ -137,9 +127,14 @@ def test_merge_updates_existing_rows(spark):
 
 
 # ===========================================================================
-# Test fixtures — automatically create all source temp views
-# (COMPLETE - Do not modify)
+# DO NOT MODIFY ANYTHING BELOW THIS LINE
 # ===========================================================================
+
+def _run_cell(spark, pattern):
+    sql = find_cell(_W4_LAB, pattern)
+    assert sql is not None, f"Could not find cell matching: {pattern}"
+    spark.sql(sql)
+
 
 @pytest.fixture(autouse=True)
 def bronze_source_data(spark):
