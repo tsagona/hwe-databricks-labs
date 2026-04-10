@@ -64,7 +64,7 @@ def _run_silver_order_items(spark):
 
 def test_stores_merge(spark):
     _run_silver_stores(spark)
-    row = spark.sql("SELECT store_nbr, name FROM silver.stores WHERE store_nbr = 'S001'").collect()
+    row = spark.sql("SELECT * FROM silver.stores WHERE store_nbr = 'S001'").collect()
     # row is a list of Row objects; row[0].name is a string
     # TODO: assert that exactly one row exists for S001 with name 'Downtown Books'
 
@@ -75,8 +75,8 @@ def test_stores_merge(spark):
 
 def test_categories_merge(spark):
     _run_silver_categories(spark)
-    space_opera = spark.sql("SELECT parent_category_id FROM silver.categories WHERE category_id = '11'").collect()[0]
-    fiction = spark.sql("SELECT parent_category_id FROM silver.categories WHERE category_id = '1'").collect()[0]
+    space_opera = spark.sql("SELECT * FROM silver.categories WHERE category_id = '11'").collect()[0]
+    fiction = spark.sql("SELECT * FROM silver.categories WHERE category_id = '1'").collect()[0]
     # space_opera and fiction are Row objects; .parent_category_id is a string
     # TODO: assert space_opera.parent_category_id and fiction.parent_category_id are correct
 
@@ -101,7 +101,7 @@ def test_books_trims_whitespace(spark):
     """)
     _run_silver_books(spark)
     row = spark.sql(
-        "SELECT title, author, category_id FROM silver.books WHERE isbn = '978-0-00-000099-9'"
+        "SELECT * FROM silver.books WHERE isbn = '978-0-00-000099-9'"
     ).collect()
     # row is a list of Row objects; .title, .author, .category_id are strings
     # TODO: assert that row has exactly 1 result and row[0].title, row[0].author, row[0].category_id
@@ -115,7 +115,7 @@ def test_books_trims_whitespace(spark):
 def test_customers_takes_most_recent(spark):
     _run_silver_customers(spark)
     alice = spark.sql(
-        "SELECT email, name, address, city FROM silver.customers WHERE email = 'alice@example.com'"
+        "SELECT * FROM silver.customers WHERE email = 'alice@example.com'"
     ).collect()
     # alice is a list of Row objects; .name, .address, .city are strings
     # TODO: assert alice has exactly 1 row (deduplication worked) and alice[0].name, .address, .city
@@ -139,23 +139,18 @@ def test_orders_unified(spark):
 def test_orders_online_sentinel(spark):
     _run_silver_orders(spark)
     wrong_store = spark.sql("""
-        SELECT COUNT(*) AS cnt FROM silver.orders
+        SELECT * FROM silver.orders
         WHERE order_channel = 'online' AND store_nbr != 'online'
-    """).collect()[0].cnt
-    # TODO: assert wrong_store equals 0
+    """).collect()
+    # TODO: assert len(wrong_store) equals 0
 
 
 def test_orders_instore_null_email_sentinel(spark):
     _run_silver_orders(spark)
-    customer_email = spark.sql(
-        "SELECT customer_email FROM silver.orders WHERE order_id = 'INS-001'"
-    ).collect()[0].customer_email
-    customer_email_2 = spark.sql(
-        "SELECT customer_email FROM silver.orders WHERE order_id = 'INS-002'"
-    ).collect()[0].customer_email
-    # customer_email and customer_email_2 are strings
-    # TODO: assert that customer_email (INS-001, which had NULL) equals 'in-store',
-    # and customer_email_2 (INS-002, which had a real email) equals 'bob@example.com'
+    ins_001 = spark.sql("SELECT * FROM silver.orders WHERE order_id = 'INS-001'").collect()
+    ins_002 = spark.sql("SELECT * FROM silver.orders WHERE order_id = 'INS-002'").collect()
+    # TODO: assert that ins_001[0].customer_email equals 'in-store' (NULL email became sentinel),
+    # and ins_002[0].customer_email equals 'bob@example.com'
 
 
 # ---------------------------------------------------------------------------
@@ -166,10 +161,8 @@ def test_order_items_exploded(spark):
     _run_silver_order_items(spark)
     onl_001 = spark.sql("SELECT * FROM silver.order_items WHERE order_id = 'ONL-001'").collect()
     ins_001 = spark.sql("SELECT * FROM silver.order_items WHERE order_id = 'INS-001'").collect()
-    ins_002_count = spark.sql(
-        "SELECT COUNT(*) AS cnt FROM silver.order_items WHERE order_id = 'INS-002'"
-    ).collect()[0].cnt
-    # TODO: assert len(onl_001) equals 1, len(ins_001) equals 1, and ins_002_count equals 2
+    ins_002 = spark.sql("SELECT * FROM silver.order_items WHERE order_id = 'INS-002'").collect()
+    # TODO: assert len(onl_001) equals 1, len(ins_001) equals 1, and len(ins_002) equals 2
     # (INS-002 had 2 items in its JSON array, so it should explode into 2 rows)
 
 

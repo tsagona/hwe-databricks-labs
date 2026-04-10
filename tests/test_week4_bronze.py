@@ -44,10 +44,10 @@ def test_categories_insert_overwrite(spark):
 def test_books_insert_overwrite(spark):
     _run_cell(spark, "bronze_books_load")
     nulls = spark.sql("""
-        SELECT COUNT(*) AS cnt FROM bronze.books
+        SELECT * FROM bronze.books
         WHERE ingestion_timestamp IS NULL OR source_filename IS NULL
-    """).collect()[0].cnt
-    # TODO: assert nulls equals 0
+    """).collect()
+    # TODO: assert len(nulls) equals 0
 
 
 # ---------------------------------------------------------------------------
@@ -70,11 +70,10 @@ def test_instore_orders_merge(spark):
 
 def test_merge_is_idempotent(spark):
     _run_cell(spark, "bronze_online_orders_merge")
-    count_after_first = spark.sql("SELECT COUNT(*) AS cnt FROM bronze.online_orders").collect()[0].cnt
+    rows_after_first = spark.sql("SELECT * FROM bronze.online_orders").collect()
     _run_cell(spark, "bronze_online_orders_merge")
-    count_after_second = spark.sql("SELECT COUNT(*) AS cnt FROM bronze.online_orders").collect()[0].cnt
-    # count_after_first and count_after_second are integers
-    # TODO: assert that count_after_first equals count_after_second (running MERGE twice should not add rows)
+    rows_after_second = spark.sql("SELECT * FROM bronze.online_orders").collect()
+    # TODO: assert that len(rows_after_first) equals len(rows_after_second) (running MERGE twice should not add rows)
 
 
 # ---------------------------------------------------------------------------
@@ -83,9 +82,9 @@ def test_merge_is_idempotent(spark):
 
 def test_categories_hierarchy_preserved(spark):
     _run_cell(spark, "bronze_categories_load")
-    fiction = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '1'").collect()[0]
-    sci_fi = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '3'").collect()[0]
-    space_opera = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '11'").collect()[0]
+    fiction = spark.sql("SELECT * FROM bronze.categories WHERE category_id = '1'").collect()[0]
+    sci_fi = spark.sql("SELECT * FROM bronze.categories WHERE category_id = '3'").collect()[0]
+    space_opera = spark.sql("SELECT * FROM bronze.categories WHERE category_id = '11'").collect()[0]
     # fiction, sci_fi, space_opera are Row objects; .parent_category_id is a string
     # TODO: assert the correct parent_category_id for each:
     # fiction (top-level) should have empty string, sci_fi should reference fiction, space_opera should reference sci_fi
@@ -93,23 +92,22 @@ def test_categories_hierarchy_preserved(spark):
 
 def test_instore_orders_nullable_email(spark):
     _run_cell(spark, "bronze_instore_orders_merge")
-    customer_email = spark.sql("SELECT customer_email FROM bronze.instore_orders").collect()[0].customer_email
-    # customer_email is None or a string
-    # TODO: assert that customer_email is None (the test data has a NULL email that should be preserved in bronze)
+    row = spark.sql("SELECT * FROM bronze.instore_orders").collect()
+    # row is a list of Row objects; row[0].customer_email is None or a string
+    # TODO: assert that row[0].customer_email is None (the test data has a NULL email that should be preserved in bronze)
 
 
 def test_instore_orders_has_cashier_name(spark):
     _run_cell(spark, "bronze_instore_orders_merge")
-    cashier_name = spark.sql("SELECT cashier_name FROM bronze.instore_orders").collect()[0].cashier_name
-    # cashier_name is a string
-    # TODO: assert that cashier_name equals the expected value
+    row = spark.sql("SELECT * FROM bronze.instore_orders").collect()
+    # row is a list of Row objects; row[0].cashier_name is a string
+    # TODO: assert that row[0].cashier_name equals the expected value
 
 
 def test_books_preserves_category_reference(spark):
     _run_cell(spark, "bronze_books_load")
-    category_ids = [r.category_id for r in spark.sql("SELECT category_id FROM bronze.books").collect()]
-    # category_ids is a list of strings
-    # TODO: assert that all books reference category_id '11' (Space Opera)
+    wrong_category = spark.sql("SELECT * FROM bronze.books WHERE category_id != '11'").collect()
+    # TODO: assert len(wrong_category) equals 0 (all books should reference category_id '11')
 
 
 def test_merge_updates_existing_rows(spark):
@@ -136,10 +134,9 @@ def test_merge_updates_existing_rows(spark):
     """)
 
     _run_cell(spark, "bronze_online_orders_merge")
-    count = spark.sql("SELECT COUNT(*) AS cnt FROM bronze.online_orders").collect()[0].cnt
-    total_amount = spark.sql("SELECT total_amount FROM bronze.online_orders").collect()[0].total_amount
-    # count is an integer; total_amount is a Decimal
-    # TODO: assert that count is still 1 (MERGE updated, not inserted) and total_amount is now Decimal("99.99")
+    rows = spark.sql("SELECT * FROM bronze.online_orders").collect()
+    # rows is a list of Row objects; rows[0].total_amount is a Decimal
+    # TODO: assert that len(rows) is 1 (MERGE updated, not inserted) and rows[0].total_amount equals Decimal("99.99")
 
 
 # ===========================================================================
