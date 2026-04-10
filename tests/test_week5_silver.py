@@ -75,9 +75,8 @@ def test_stores_merge(spark):
 
 def test_categories_merge(spark):
     _run_silver_categories(spark)
-    rows = spark.sql("SELECT category_id, parent_category_id FROM silver.categories").collect()
-    space_opera = [r for r in rows if r.category_id == "11"][0]
-    fiction = [r for r in rows if r.category_id == "1"][0]
+    space_opera = spark.sql("SELECT parent_category_id FROM silver.categories WHERE category_id = '11'").collect()[0]
+    fiction = spark.sql("SELECT parent_category_id FROM silver.categories WHERE category_id = '1'").collect()[0]
     # space_opera and fiction are Row objects; .parent_category_id is a string
     # TODO: assert space_opera.parent_category_id and fiction.parent_category_id are correct
 

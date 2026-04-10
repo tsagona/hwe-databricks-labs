@@ -80,14 +80,9 @@ def test_merge_is_idempotent(spark):
 
 def test_categories_hierarchy_preserved(spark):
     _run_cell(spark, "bronze_categories_load")
-    rows = spark.sql("""
-        SELECT category_id, category_name, parent_category_id
-        FROM bronze.categories
-        ORDER BY category_id
-    """).collect()
-    fiction = [r for r in rows if r.category_id == "1"][0]
-    sci_fi = [r for r in rows if r.category_id == "3"][0]
-    space_opera = [r for r in rows if r.category_id == "11"][0]
+    fiction = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '1'").collect()[0]
+    sci_fi = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '3'").collect()[0]
+    space_opera = spark.sql("SELECT parent_category_id FROM bronze.categories WHERE category_id = '11'").collect()[0]
     # fiction, sci_fi, space_opera are Row objects; .parent_category_id is a string
     # TODO: assert the correct parent_category_id for each:
     # fiction (top-level) should have empty string, sci_fi should reference fiction, space_opera should reference sci_fi
