@@ -19,15 +19,15 @@ def test_valid_email_filter(spark):
     """Assert that only employees with a valid email are inserted into filtered_employees."""
     _run_cell(spark, "demo_valid_email_filter")
     rows = spark.sql("SELECT * FROM week3_testing.filtered_employees").collect()
-    # TODO: assert len(rows) equals the number of employees whose email contains '@'
-
+    assert len(rows) == 3
 
 def test_insert_engineering_filter(spark):
     """Assert that only Engineering employees are inserted into filtered_employees."""
     _run_cell(spark, "demo_insert_engineering_filter")
     rows = spark.sql("SELECT * FROM week3_testing.filtered_employees").collect()
-    # TODO: assert len(rows) equals the number of Engineering employees
-
+    assert len(rows) == 2
+    for row in rows:
+        assert row.department == "Engineering"
 
 # ===========================================================================
 # DO NOT MODIFY ANYTHING BELOW THIS LINE
